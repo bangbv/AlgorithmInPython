@@ -1,3 +1,5 @@
+# https://machinelearningcoban.com/2017/01/01/kmeans/
+
 from __future__ import print_function
 import numpy as np
 import matplotlib.pyplot as plt
@@ -29,8 +31,6 @@ def kmeans_display(X, label):
     plt.plot(X2[:, 0], X2[:, 1], 'rs', markersize=4, alpha=.8)
 
     plt.axis('equal')
-    plt.plot()
+    plt.plot() 
     plt.show()
-
-
 kmeans_display(X, original_label)
