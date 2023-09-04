@@ -1,4 +1,4 @@
-class MNode:
+class Node:
     def __init__(self, node_val=None):
         self.node_val = node_val
         self.next_node = None
@@ -16,8 +16,60 @@ def print_linked_list(linked_list):
         node = node.next_node
 
 
-if __name__ == '__main__':
-    l_list = MyLinkedList()
-    l_list.head_node = MNode("Monday")
+def merge_list(list_a, list_b):
+    node_a = list_a.head_node
+    node_b = list_b.head_node
+    list_c = MyLinkedList()
+    if node_a is not None and node_b is not None:
+        if node_a.node_val >= node_b.node_val:
+            list_c.head_node = Node(node_b.node_val)
+            node_b = node_b.next_node
 
-    print_linked_list(l_list)
+        else:
+            list_c.head_node = Node(node_a.node_val)
+            node_a = node_a.next_node
+
+    node_c = list_c.head_node
+    while node_a is not None and node_b is not None:
+        if node_a.node_val >= node_b.node_val:
+            node_c.next_node = Node(node_b.node_val)
+            node_b = node_b.next_node
+        else:
+            node_c.next_node = Node(node_a.node_val)
+            node_a = node_a.next_node
+
+        node_c = node_c.next_node
+    while node_a is not None:
+        node_c.next_node = Node(node_a.node_val)
+        node_a = node_a.next_node
+        node_c = node_c.next_node
+
+    while node_b is not None:
+        node_c.next_node = Node(node_b.node_val)
+        node_b = node_b.next_node
+        node_c = node_c.next_node
+
+    return list_c
+
+
+if __name__ == '__main__':
+    list_a = MyLinkedList()
+    node1 = Node(1)
+    node3 = Node(3)
+    node5 = Node(5)
+    list_a.head_node = node1
+    node1.next_node = node3
+    node3.next_node = node5
+    # print_linked_list(list_a)
+
+    list_b = MyLinkedList()
+    node2 = Node(2)
+    node4 = Node(4)
+    node6 = Node(6)
+    list_b.head_node = node2
+    node2.next_node = node4
+    node4.next_node = node6
+    # print_linked_list(list_b)
+
+    list_c = merge_list(list_a, list_b)
+    print_linked_list(list_c)
