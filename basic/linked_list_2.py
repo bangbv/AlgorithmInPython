@@ -21,25 +21,24 @@ def merge_list(list_a, list_b):
     node_b = list_b.head_node
     list_c = MyLinkedList()
     node_c = None
+    if node_a is not None and node_b is not None:
+        if node_a.node_val >= node_b.node_val:
+            node_c = Node(node_b.node_val)
+            node_b = node_b.next_node
+            list_c.head_node = node_c
+        else:
+            node_c = Node(node_a.node_val)
+            node_a = node_a.next_node
+            list_c.head_node = node_c
 
     while node_a is not None and node_b is not None:
         if node_a.node_val >= node_b.node_val:
-            if list_c.head_node is None:
-                node_c = Node(node_b.node_val)
-                list_c.head_node = node_c
-            else:
-                node_c.next_node = Node(node_b.node_val)
-                node_c = node_c.next_node
+            node_c.next_node = Node(node_b.node_val)
             node_b = node_b.next_node
         else:
-            if list_c.head_node is None:
-                node_c = Node(node_a.node_val)
-                list_c.head_node = node_c
-            else:
-                node_c.next_node = Node(node_a.node_val)
-                node_c = node_c.next_node
+            node_c.next_node = Node(node_a.node_val)
             node_a = node_a.next_node
-
+        node_c = node_c.next_node
     while node_a is not None:
         node_c.next_node = Node(node_a.node_val)
         node_a = node_a.next_node
