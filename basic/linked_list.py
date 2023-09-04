@@ -16,9 +16,9 @@ class LinkedList:
 
 
 def list_print(linked_list):
-    printval = linked_list.headval
+    printval = linked_list.head_val
     while printval is not None:
-        print(printval.dataval)
+        print(printval.data_val)
         printval = printval.nextval
 
 
