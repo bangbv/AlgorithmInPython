@@ -1,7 +1,8 @@
 # main.py
 # ! pip install torchvision
 import torch, torch.nn as nn, torch.utils.data as data, torchvision as tv, torch.nn.functional as F
-import lightning as L
+from lightning import LightningModule
+
 
 # --------------------------------
 # Step 1: Define a LightningModule
@@ -10,7 +11,7 @@ import lightning as L
 # (ie: an LLM, diffusion model, autoencoder, or simple image classifier).
 
 
-class LitAutoEncoder(L.LightningModule):
+class LitAutoEncoder(LightningModule):
     def __init__(self):
         super().__init__()
         self.encoder = nn.Sequential(nn.Linear(28 * 28, 128), nn.ReLU(), nn.Linear(128, 3))
