@@ -23,3 +23,8 @@ class CustomImageDataset(Dataset):
         if self.target_transform:
             label = self.target_transform(label)
         return image, label
+
+dataset = CustomImageDataset()
+dataset.__init__("data/labels.csv", "data/images")
+
+print(dataset.__len__())
