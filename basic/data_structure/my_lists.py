@@ -1,4 +1,8 @@
 if __name__ == '__main__':
+    X = {1, 2, 3, 4, 5}
+    for x in range(X):
+        print(x)
+
     N = int(input())
     l = []
     for _ in range(N):

@@ -62,7 +62,11 @@ def array_operations():
     # Element-wise Operations: Arithmetic operations (+, -, *, /) are performed element-wise.
     arr1 = np.array([1, 2, 3])
     arr2 = np.array([4, 5, 6])
-    print(arr1 + arr2)  # Output: [5 7 9]
+    total  =  arr1 + arr2
+    print(f"sum two arrays: {total}")  # Output: [5 7 9]
+    # sum array with an arbitrary number
+    total_2 = arr1 + 10
+    print(f"sum array with an arbitrary number: {total_2}")  # Output: [11 12 13]
     # Aggregation Functions: sum, mean, max, min, etc.
     print(arr1.sum())  # Output: 6 (1 + 2 + 3)
     print(arr1.mean())  # Output: 2.0
@@ -90,4 +94,4 @@ if __name__ == '__main__':
     # indexing_slicing()
     # broadcasting()
     array_operations()
-    shape_munipulation()
+    # shape_munipulation()
