@@ -1,11 +1,11 @@
 
-thisdict = {
+this_dict = {
   "brand": "Ford",
   "model": "Mustang",
   "year": 1964
 }
-print("brand:",thisdict["brand"])
+print("brand:",this_dict["brand"])
 
-print("keys:",thisdict.keys())
-print("values:",thisdict.values())
-print("items:",thisdict.items())
+print("keys:",this_dict.keys())
+print("values:",this_dict.values())
+print("items:",this_dict.items())

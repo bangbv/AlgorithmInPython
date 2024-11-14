@@ -13,6 +13,7 @@ import sys
 
 def bigSorting(unsorted):
     # Write your code here
+    pass
 
 if __name__ == '__main__':
     fptr = open(os.environ['OUTPUT_PATH'], 'w')
