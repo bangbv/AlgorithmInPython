@@ -1,105 +1,58 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.fft import fft, fftfreq
+from scipy.fft import fft2, fftshift
+from matplotlib.image import imread
 
 
-# One-dimensional Fourier Transform
-def create_signal():
-    # Sampling parameters
-    Fs = 1000  # Sampling frequency (samples per second)
-    T = 1 / Fs  # Sampling interval (seconds per sample)
-    N = 2000  # Number of samples
-    # The linspace() function returns
-    # an array of evenly spaced values within the specified interval [start, stop].
-    t = np.linspace(0, N * T, N, endpoint=False)  # Time vector
-    print(f"Time vector: {t}")
+# 2D-dimensional Fourier Transform
+# Load the image (grayscale for simplicity)
+def load_image(image_path):
+    image = imread(image_path)
+    if image.ndim == 3:
+        # Convert to grayscale by averaging the RGB channels
+        image = np.mean(image, axis=2)
+    return image
 
-    # Signal parameters
-    f1 = 50  # Frequency of the first sine wave (Hz)
-    f2 = 120  # Frequency of the second sine wave (Hz)
-
-    first_signal = 0.7 * np.sin(2 * np.pi * f1 * t)  # First sine wave
-    second_signal = 1.0 * np.sin(2 * np.pi * f2 * t)  # Second sine wave
-    # Create the signal
-    combine_signal = first_signal + second_signal
-    return combine_signal, N, T, first_signal, second_signal, t
-
-
-def plot_signal(signal, t):
-    plt.figure(figsize=(14, 6))
-    plt.plot(t, signal)
-    plt.title('Time-Domain Signal')
-    plt.xlabel('Time [s]')
-    plt.ylabel('Amplitude')
+def show_image(image):
+    plt.imshow(image, cmap='gray')
+    plt.title('Original Image')
+    plt.axis('off')
     plt.show()
 
 
-def plot_two_signal(t, first_signal, second_signal):
-    plt.figure(figsize=(14, 6))
-    plt.subplot(1, 2, 1)
-    plt.title('First Signal')
-    plt.xlabel('Time [s]')
-    plt.ylabel('Amplitude')
-    # Plotting both the curves simultaneously
-    plt.plot(t, first_signal, color='r', label='first signal')
-    # plt.plot(t, second_signal, color='g', label='second signal')
-
-
-    plt.subplot(1, 2, 2)
-    plt.title('Second Signal')
-    plt.xlabel('Time [s]')
-    plt.ylabel('Amplitude')
-    plt.plot(t, second_signal, color='g', label='second signal')
-
-    # Adding legend, which helps us recognize the curve according to it's color
-    plt.legend()
-    # plt.xlim(0, 200)  # Limit x-axis for better visibility
-    # plt.tight_layout()
-    # To load the display window
-    plt.show()
-
-def fourier_transform(signal, N, T):
-    # Compute the FFT (Fast Fourier Transform)
-    fft_values = fft(signal)
-    freqs = fftfreq(N, T)
-    return freqs, fft_values
-
-
-def process_output(freqs, fft_values, N):
+# Compute the 2D Fourier Transform
+def fourier_transform(image):
+    # Compute the 2D Fourier Transform
+    fourier_image = fft2(image)
+    # Shift the zero frequency component to the center
+    fourier_image = fftshift(fourier_image)
     # Compute the magnitude spectrum
-    magnitude = np.abs(fft_values) / N  # Normalize the amplitude
+    magnitude_spectrum = np.log(np.abs(fourier_image) + 1)  # Add 1 to avoid log(0)
+    return fourier_image, magnitude_spectrum
 
-    # Since the FFT output is symmetric, take only the positive half
-    pos_mask = freqs >= 0
-    freqs = freqs[pos_mask]
-    magnitude = magnitude[pos_mask]
-    return freqs, magnitude
 
-def plot_fourier_transform(signal, t, freqs, magnitude):
-    # Plot the time-domain signal
-    plt.figure(figsize=(14, 6))
+# Apply a high-pass filter mask
+def high_pass_filter_mask(image, fourier_image):
+    # Create a high-pass filter mask
+    rows, cols = image.shape
+    crow, ccol = rows // 2, cols // 2
+    mask = np.ones((rows, cols), dtype=np.uint8)
+    r = 50  # Radius of the low-frequency region to block
+    center = [crow, ccol]
+    Y, X = np.ogrid[:rows, :cols]
+    dist_from_center = np.sqrt((X - center[1])**2 + (Y - center[0])**2)
+    mask[dist_from_center <= r] = 0
 
-    plt.subplot(1, 2, 1)
-    plt.plot(t, signal)
-    plt.title('Time-Domain Signal')
-    plt.xlabel('Time [s]')
-    plt.ylabel('Amplitude')
-
-    # Plot the frequency-domain signal
-    plt.subplot(1, 2, 2)
-    plt.stem(freqs, magnitude, 'b', markerfmt=" ", basefmt="-b")
-    plt.title('Frequency-Domain Signal')
-    plt.xlabel('Frequency [Hz]')
-    plt.ylabel('Magnitude')
-    plt.xlim(0, 200)  # Limit x-axis for better visibility
-    plt.tight_layout()
-    plt.show()
-
+    # Apply the mask and inverse FFT
+    fft_image_shifted_filtered = fourier_image * mask
+    fft_image_filtered = np.fft.ifftshift(fft_image_shifted_filtered)
+    image_filtered = np.fft.ifft2(fft_image_filtered).real
+    return image_filtered
 
 if __name__ == '__main__':
-    signal, N, T, first_signal, second_signal, t = create_signal()
-    plot_signal(signal, t)
-    # plot_two_signal(t, first_signal, second_signal)
-    freqs, fft_values = fourier_transform(signal, N, T)
-    freqs, magnitude = process_output(freqs, fft_values, N)
-    # plot_fourier_transform(signal, np.linspace(0, N * T, N, endpoint=False), freqs, magnitude)
+    image = load_image('/Users/bangbui/workspace/AlgorithmInPython/representations/Figure_1.png')
+    # show_image(image)
+    fourier_image, magnitude_spectrum = fourier_transform(image)
+    # show_image(magnitude_spectrum)
+    image_filtered = high_pass_filter_mask(image, fourier_image)
+    show_image(image_filtered)
