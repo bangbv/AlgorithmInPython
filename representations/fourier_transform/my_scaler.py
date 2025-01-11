@@ -195,13 +195,13 @@ if __name__ == "__main__":
     train = [train]
 
     input_arrs = [train[i].values for i in range(len(train))]
-    alpha = 0.95
+    alpha = 0.3
     beta = 0.3
-    basic = False
+    basic = True
     scalers = [get_scaler(train[i].values, alpha=alpha, beta=beta, basic=basic) for i in range(len(train))]
     # print(f"scalers: {scalers}")
     transformed_input_arrs = np.array([scaler.transform(input_array) for input_array, scaler in zip(input_arrs, scalers)])
-    print(transformed_input_arrs)
+    print(f"transformed_input_arrs: {transformed_input_arrs}")
 
     settings = SerializerSettings(base=10, prec=3, signed=True, time_sep=', ', bit_sep='', minus_sign='-')
     final_input_strs = [serialize_arr(scaled_input_arr, settings) for scaled_input_arr in transformed_input_arrs]
