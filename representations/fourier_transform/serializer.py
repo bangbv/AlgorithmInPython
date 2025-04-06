@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 import numpy as np
-import pandas as pd
 from functools import partial
 
 
@@ -50,6 +49,31 @@ def vec_num2repr(val, base, prec, max_val):
         digits = before_decimals
     return sign, digits
 
+
+def vec_repr2num(sign, digits, base, prec, half_bin_correction=True):
+    """
+    Convert a string representation in a specified base back to numbers.
+
+    Parameters:
+    - sign (np.array): The sign of the numbers.
+    - digits (np.array): Digits of the numbers in the specified base.
+    - base (int): The base of the representation.
+    - prec (int): The precision after the 'decimal' point in the base representation.
+    - half_bin_correction (bool): If True, adds 0.5 of the smallest bin size to the number.
+
+    Returns:
+    - np.array: Numbers corresponding to the given base representation.
+    """
+    base = float(base)
+    bs, D = digits.shape
+    digits_flipped = np.flip(digits, axis=-1)
+    powers = -np.arange(-prec, -prec + D)
+    val = np.sum(digits_flipped/base**powers, axis=-1)
+
+    if half_bin_correction:
+        val += 0.5/base**prec
+
+    return sign * val
 
 @dataclass
 class SerializerSettings:
@@ -135,74 +159,80 @@ def serialize_arr(arr, settings: SerializerSettings):
     bit_str += settings.time_sep  # otherwise there is ambiguity in number of digits in the last time step
     return bit_str
 
-
-@dataclass
-class Scaler:
+def deserialize_str(bit_str, settings: SerializerSettings, ignore_last=False, steps=None):
     """
-    Represents a data scaler with transformation and inverse transformation functions.
+    Deserialize a string into an array of numbers (a time series) based on the provided settings.
 
-    Attributes:
-        transform (callable): Function to apply transformation.
-        inv_transform (callable): Function to apply inverse transformation.
-    """
-    transform: callable = lambda x: x
-    inv_transform: callable = lambda x: x
-
-def get_scaler(history, alpha=0.95, beta=0.3, basic=False):
-    """
-    Generate a Scaler object based on given history data.
-
-    Args:
-        history (array-like): Data to derive scaling from.
-        alpha (float, optional): Quantile for scaling. Defaults to .95.
-        # Truncate inputs
-        tokens = [tokeniz]
-        beta (float, optional): Shift parameter. Defaults to .3.
-        basic (bool, optional): If True, no shift is applied, and scaling by values below 0.01 is avoided. Defaults to False.
+    Parameters:
+    - bit_str (str): String representation of an array of numbers.
+    - settings (SerializerSettings): Settings for deserialization.
+    - ignore_last (bool): If True, ignores the last time step in the string (which may be incomplete due to token limit etc.). Default is False.
+    - steps (int, optional): Number of steps or entries to deserialize.
 
     Returns:
-        Scaler: Configured scaler object.
+    - None if deserialization failed for the very first number, otherwise
+    - np.array: Array of numbers corresponding to the string.
     """
-    history = history[~np.isnan(history)]
-    if basic:
-        q = np.maximum(np.quantile(np.abs(history), alpha),.01)
-        def transform(x):
-            return x / q
-        def inv_transform(x):
-            return x * q
+    # ignore_last is for ignoring the last time step in the prediction, which is often a partially generated due to token limit
+    orig_bitstring = bit_str
+    # print(f"deserialize_str: bit_str: {bit_str}")
+    bit_strs = bit_str.split(settings.time_sep)
+    # print(f"deserialize_str: bit_strs: {bit_strs}")
+    # remove empty strings
+    bit_strs = [a for a in bit_strs if len(a) > 0]
+    if ignore_last:
+        bit_strs = bit_strs[:-1]
+    if steps is not None:
+        bit_strs = bit_strs[:steps]
+    vrepr2num = partial(vec_repr2num,base=settings.base,prec=settings.prec,half_bin_correction=settings.half_bin_correction)
+    max_bit_pos = int(np.ceil(np.log(settings.max_val)/np.log(settings.base)).item())
+    sign_arr = []
+    digits_arr = []
+    try:
+        for i, bit_str in enumerate(bit_strs):
+            if bit_str.startswith(settings.minus_sign):
+                sign = -1
+            elif bit_str.startswith(settings.plus_sign):
+                sign = 1
+            else:
+                assert settings.signed == False, f"signed bit_str must start with {settings.minus_sign} or {settings.plus_sign}"
+            bit_str = bit_str[len(settings.plus_sign):] if sign==1 else bit_str[len(settings.minus_sign):]
+            if settings.bit_sep=='':
+                bits = [b for b in bit_str.lstrip()]
+            else:
+                bits = [b[:1] for b in bit_str.lstrip().split(settings.bit_sep)]
+            if settings.fixed_length:
+                assert len(bits) == max_bit_pos+settings.prec, f"fixed length bit_str must have {max_bit_pos+settings.prec} bits, but has {len(bits)}: '{bit_str}'"
+            digits = []
+            for b in bits:
+                if b==settings.decimal_point:
+                    continue
+                # check if is a digit
+                if b.isdigit():
+                    digits.append(int(b))
+                else:
+                    break
+            #digits = [int(b) for b in bits]
+            sign_arr.append(sign)
+            digits_arr.append(digits)
+    except Exception as e:
+        print(f"Error deserializing {settings.time_sep.join(bit_strs[i-2:i+5])}{settings.time_sep}\n\t{e}")
+        print(f'Got {orig_bitstring}')
+        print(f"Bitstr {bit_str}, separator {settings.bit_sep}")
+        # At this point, we have already deserialized some of the bit_strs, so we return those below
+    if digits_arr:
+        # add leading zeros to get to equal lengths
+        max_len = max([len(d) for d in digits_arr])
+        for i in range(len(digits_arr)):
+            digits_arr[i] = [0]*(max_len-len(digits_arr[i])) + digits_arr[i]
+        final_result = vrepr2num(np.array(sign_arr), np.array(digits_arr))
+        print(f"serializer:deserialize_str: final_result:{final_result}")
+        return final_result
     else:
-        min_ = np.min(history) - beta*(np.max(history)-np.min(history))
-        q = np.quantile(history-min_, alpha)
-        if q == 0:
-            q = 1
-        def transform(x):
-            # print_debug(my_print, f"transform from :", x, log_debug)
-            # print_debug(my_print, f"transform to new:", (x - min_) / q, log_debug)
-            return (x - min_) / q
-        def inv_transform(x):
-            # print_debug(my_print, f"revert transform from :", x, log_debug)
-            # print_debug(my_print, f"revert transform to new:", (x - min_) / q, log_debug)
-            return x * q + min_
-    return Scaler(transform=transform, inv_transform=inv_transform)
+        # errored at first step
+        return None
 
 
 
 
-if __name__ == "__main__":
-    # Create a unique scaler for each series
-    input_arrs = np.array([112,118,132,129,121,135,148,148])
-    train = pd.Series(input_arrs)
-    train = [train]
 
-    input_arrs = [train[i].values for i in range(len(train))]
-    alpha = 0.3
-    beta = 0.3
-    basic = True
-    scalers = [get_scaler(train[i].values, alpha=alpha, beta=beta, basic=basic) for i in range(len(train))]
-    # print(f"scalers: {scalers}")
-    transformed_input_arrs = np.array([scaler.transform(input_array) for input_array, scaler in zip(input_arrs, scalers)])
-    print(f"transformed_input_arrs: {transformed_input_arrs}")
-
-    settings = SerializerSettings(base=10, prec=3, signed=True, time_sep=', ', bit_sep='', minus_sign='-')
-    final_input_strs = [serialize_arr(scaled_input_arr, settings) for scaled_input_arr in transformed_input_arrs]
-    print(f"final_input_strs: {final_input_strs}")
