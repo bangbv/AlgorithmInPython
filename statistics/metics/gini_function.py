@@ -8,3 +8,12 @@ from sklearn.metrics import roc_auc_score
 def gini(y_true, y_scores):
     auc = roc_auc_score(y_true, y_scores)
     return 2 * auc - 1
+
+
+
+# main function
+if __name__ == "__main__":
+    y_true = [1, 0, 1, 1, 0, 1, 0]
+    y_pred = [1, 0, 0, 1, 0, 1, 1]
+    result = gini(y_true, y_pred)
+    print(f"result: {result}", )
