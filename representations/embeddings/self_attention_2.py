@@ -5,7 +5,7 @@ import torch.nn.functional as F
 #
 # embedding an input sentence
 #
-def embedding_sentence(sentence):
+def self_attention(sentence):
     # dictionary dc is restricted to the words that occur in the input sentence
     dc = {s:i for i,s in enumerate(sorted(sentence.replace(',', '').split()))}
     print(f"embedding_sentence:dictionary: {dc}")
@@ -20,10 +20,7 @@ def embedding_sentence(sentence):
     print(f"embedding_sentence:first row of embedding matrix: {embed.weight[0,:]}")
 
     embedded_sentence = embed(sentence_int).detach()
-    return embedded_sentence
 
-
-def weight_matrices(embedded_sentence):
     torch.manual_seed(123) # for reproducibility
 
     d = embedded_sentence.shape[1]
@@ -38,34 +35,41 @@ def weight_matrices(embedded_sentence):
     W_value = torch.nn.Parameter(torch.rand(d_v, d))
     print(f"weight_matrices:W_value shape: {W_value.shape}")
 
-    return W_query, W_key, W_value
-
-
-def unnormalized_attention_weights(embedded_sentence, W_key, W_value):
+    query = W_query.matmul(embedded_sentence.T).T
     keys = W_key.matmul(embedded_sentence.T).T
     values = W_value.matmul(embedded_sentence.T).T
+    omega = query.matmul(keys.T)
 
     print("unnormalized_attention_weights:key matrix:", keys.shape)
     print("unnormalized_attention_weights: values matrix:", values.shape)
+    print(f"omega shape: {omega.shape}")
+    print(f"omega 2nd column: {omega[1, :]}")
 
-    return keys, values
+    x_2 = embedded_sentence[1]
+    query_2 = W_query.matmul(x_2)
+    key_2 = W_key.matmul(x_2)
+    value_2 = W_value.matmul(x_2)
+    omega_24 = query_2.dot(keys[4])
+    print(f"omega_24: {omega_24}")
 
+    omega_2 = query_2.matmul(keys.T)
+    print(f"omega_2: {omega_2}")
 
-def attention_score(omega_2, d_k, values):
+    attention_weights = F.softmax(omega / d_k ** 0.5, dim=0)
     attention_weights_2 = F.softmax(omega_2 / d_k ** 0.5, dim=0)
-    print(attention_weights_2)
+    print(f"attention_weights_2: {attention_weights_2}")
+    print(f"attention_weights shape: {attention_weights.shape}")
+    print(f"attention_score:{attention_weights}")
 
-    context_vector_2 = attention_weights_2.matmul(values)
+    context_vector = attention_weights.matmul(values)
 
-    print(context_vector_2.shape)
-    print(context_vector_2)
+    print(context_vector.shape)
+    # print(f"context_vector 2nd row: {context_vector[:,:]}")
+
+    return context_vector
 
 
 if __name__ == "__main__":
     sentence = 'Life is short, eat dessert first'
-    embedded_sentence = embedding_sentence(sentence)
-    print(f"embedded sentence shape: {embedded_sentence.shape}")
-    print(f"first row of embedded sentence: {embedded_sentence[0,:]}")
-    W_query, W_key, W_value = weight_matrices(embedded_sentence)
+    self_attention(sentence)
 
-    unnormalized_attention_weights(embedded_sentence, W_key, W_value)

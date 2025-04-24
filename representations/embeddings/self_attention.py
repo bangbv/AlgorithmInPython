@@ -9,10 +9,10 @@ print(f"tensor of random number: shape: {X.shape}")
 print(f"matrix at depth 0, row 0, column 0->5:\n{X[0, 0, 0:5]}")
 
 # Linear projections to Q, K, V
-WQ = torch.nn.Linear(d_model, dk, bias=False) # Query is same as input
-WK = torch.nn.Linear(d_model, dk, bias=False) # Key is same as Query
-WV = torch.nn.Linear(d_model, dk, bias=False) # Value is same as Query
-WO = torch.nn.Linear(dk, d_model, bias=False) # Output is same as input
+WQ = torch.nn.Linear(d_model, dk, bias=False) # Query
+WK = torch.nn.Linear(d_model, dk, bias=False) # Key
+WV = torch.nn.Linear(d_model, dk, bias=False) # Value
+WO = torch.nn.Linear(dk, d_model, bias=False) # Output
 
 Q, K, V = WQ(X), WK(X), WV(X)                 # (B, N, dk)
 scores = Q @ K.transpose(-2, -1) / math.sqrt(dk)  # (B, N, N)
