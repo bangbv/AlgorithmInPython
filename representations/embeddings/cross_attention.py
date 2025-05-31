@@ -1,3 +1,5 @@
+# Cross-Attention Example in PyTorch
+
 import torch, math
 
 
@@ -21,3 +23,4 @@ weights = torch.softmax(scores, dim=-1)           # (B, NT, NS)
 context = weights @ V                             # (B, NT, dk)
 
 out = WO(context)                                 # (B, NT, d_model)
+print("Output:", out)
