@@ -46,9 +46,9 @@ def get_generator(model, tokenizer):
 
 if __name__ == "__main__":
     login_huggingface()
-    # model_id, bnb_config = get_model_id()
-    # model, tokenizer = load_model(model_id, bnb_config)
-    # generator = get_generator(model, tokenizer)
-    # prompt = "What is the capital of France?"
-    # result = generator(prompt, max_new_tokens=50, num_return_sequences=1)
-    # print(result[0]['generated_text'])
+    model_id, bnb_config = get_model_id()
+    model, tokenizer = load_model(model_id, bnb_config)
+    generator = get_generator(model, tokenizer)
+    prompt = "What is the capital of France?"
+    result = generator(prompt, max_new_tokens=50, num_return_sequences=1)
+    print(result[0]['generated_text'])
