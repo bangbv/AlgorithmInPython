@@ -2,10 +2,10 @@
 # lambda arguments : expression
 
 x = lambda a : a + 10
-print(x(5))
+print(f"x(5): {x(5)}")
 
 x = lambda a, b : a * b
-print(x(5, 6))
+print(f"x(5, 6): {x(5, 6)}")
 
 # The power of lambda is better shown
 # when you use them as an anonymous function inside another function.
@@ -15,5 +15,5 @@ def myfunc(n):
 my_doubler = myfunc(2)
 my_tripler = myfunc(3)
 
-print(my_doubler(11))
-print(my_tripler(11))
+print(f"my_doubler: {my_doubler(11)}")
+print(f"my_tripler: {my_tripler(11)}")
