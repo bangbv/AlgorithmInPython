@@ -22,6 +22,7 @@ def init_tensor():
 def attribute_tensor():
     # Attributes of a Tensor
     tensor = torch.rand(3,4)
+    print
     print(f"Shape of tensor: {tensor.shape}")
     print(f"Datatype of tensor: {tensor.dtype}")
     print(f"Device tensor is stored on: {tensor.device}")
@@ -64,5 +65,5 @@ def operations_tensor():
 
 if __name__ == "__main__":
     # init_tensor()
-    # attribute_tensor()
-    operations_tensor()
+    attribute_tensor()
+    # operations_tensor()
