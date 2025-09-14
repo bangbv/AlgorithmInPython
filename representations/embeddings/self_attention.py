@@ -52,7 +52,6 @@ if __name__ == "__main__":
     dk = d_model  # single head for simplicity
 
 
-
     # Generate random input tensor
     # torch.randn generates a tensor of random numbers from a normal distribution
     X = torch.randn(B, N, d_model)

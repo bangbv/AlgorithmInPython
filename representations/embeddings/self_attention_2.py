@@ -4,28 +4,31 @@ import torch.nn.functional as F
 # source: https://sebastianraschka.com/blog/2023/self-attention-from-scratch.html
 #
 # embedding an input sentence
-#
-def self_attention(sentence):
-    # dictionary dc is restricted to the words that occur in the input sentence
+def embedding_sentence(sentence):
+        # dictionary dc is restricted to the words that occur in the input sentence
     dc = {s:i for i,s in enumerate(sorted(sentence.replace(',', '').split()))}
     print(f"embedding_sentence:dictionary: {dc}")
 
-    # we use this dictionary to assign an integer index to each word
+    # we use this dictionary to assign an integer index to each word.
     sentence_int = torch.tensor([dc[s] for s in sentence.replace(',', '').split()])
     print(f"embedding_sentence:sentence in integer: {sentence_int}")
 
-    torch.manual_seed(123)
+    torch.manual_seed(123) # for reproducibility
     embed = torch.nn.Embedding(6, 16)
     print(f"embedding_sentence:embedding matrix shape: {embed.weight.shape}")
-    print(f"embedding_sentence:first row of embedding matrix: {embed.weight[0,:]}")
+    print(f"embedding_sentence: embedding matrix weight: {embed.weight}")
 
-    embedded_sentence = embed(sentence_int).detach()
+    embedded_sentence = embed(sentence_int).detach() # detach from the computation graph
 
     torch.manual_seed(123) # for reproducibility
 
-    d = embedded_sentence.shape[1]
-    print(f"weight_matrices:embedded_sentence shape d: {d}")
+    return embedded_sentence
 
+
+
+def self_attention(sentence):
+    embedded_sentence = embedding_sentence(sentence)
+    d = embedded_sentence.shape[1]
     d_q, d_k, d_v = 24, 24, 28
 
     W_query = torch.nn.Parameter(torch.rand(d_q, d))
@@ -63,13 +66,11 @@ def self_attention(sentence):
 
     context_vector = attention_weights.matmul(values)
 
-    print(context_vector.shape)
-    # print(f"context_vector 2nd row: {context_vector[:,:]}")
-
     return context_vector
 
 
 if __name__ == "__main__":
     sentence = 'Life is short, eat dessert first'
-    self_attention(sentence)
-
+    self_attention_matrix = self_attention(sentence)
+    print(f"self_attention_matrix shape: {self_attention_matrix.shape}")
+    print(f"self_attention_matrix: {self_attention_matrix}")

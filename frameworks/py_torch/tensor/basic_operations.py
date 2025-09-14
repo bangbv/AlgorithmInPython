@@ -35,5 +35,20 @@ def concat_tensors():
 
     # return result_dim0, result_dim1
 
+
+def key_broadcast():
+    a = torch.tensor([[1], [2], [3]])  # 3x1
+    b = torch.tensor([10, 20, 30])     # 1x3
+    print(f"tensor a: {a}")
+    print(f"tensor a shape: {a.shape}")
+    print(f"tensor b: {b}")
+    print(f"tensor b shape: {b.shape}")
+    print(f"Broadcasting to 3x3")
+    result = a + b  # Broadcasting to 3x3
+    print(f"tensor result: {result}")
+    print(f"result shape: {result.shape}")
+
+
 if __name__ == "__main__":
-    concat_tensors()
+    # concat_tensors()
+    key_broadcast()

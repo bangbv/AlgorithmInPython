@@ -36,4 +36,5 @@ print(f"embed.weight shape: {embed.weight.shape}")
 
 embedded_batch = embed(batch_ids)   # (3, 4, 6)
 print(f"embedded_batch shape: {embedded_batch.shape}")
+print(f"embedded_batch weight: {embedded_batch.weight}")
 # torch.Size([3, 4, 6])
