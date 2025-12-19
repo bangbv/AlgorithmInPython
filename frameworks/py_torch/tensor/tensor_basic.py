@@ -21,9 +21,14 @@ def init_tensor():
 
 def attribute_tensor():
     # Attributes of a Tensor
-    tensor = torch.rand(3,4)
+    data = [
+        [1,2,3],
+        [4,5,6]
+    ]
+    tensor = torch.tensor(data)
     print(f"Tensor: {tensor}")
     print(f"Shape of tensor: {tensor.shape}")
+    print(f"Shape[1] of tensor: {tensor.shape[1]}") 
     print(f"Datatype of tensor: {tensor.dtype}")
     print(f"Device tensor is stored on: {tensor.device}")
 
