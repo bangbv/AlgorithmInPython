@@ -6,7 +6,7 @@ matrix = np.array([
     [5, 6, 7,   8],
     [9, 10, 11, 12]
 ])
-
+print(f"matrix_shape:{matrix.shape}")
 print(f"matrix:{matrix}")
 
 # Basic slicing: matrix[row_start:row_end, col_start:col_end]

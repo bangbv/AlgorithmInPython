@@ -12,6 +12,7 @@ matrix_3d = np.array([
      [17, 18, 19, 20],
      [21, 22, 23, 24]]
 ])
+print(f"matrix_3d_shape:{matrix_3d.shape}")
 print(f"matrix_3d:\n{matrix_3d}")
 # Format: matrix[depth, row, column]
 
